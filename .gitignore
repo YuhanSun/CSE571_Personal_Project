@@ -1,0 +1,7 @@
+/search/venv/
+/search/.idea/
+/**/*.pyc
+/**/*.zip
+/**/*.xml
+/**/*.iml
+/*.pdf
