@@ -143,8 +143,33 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    cost = lambda ele: problem.getCostOfActions(ele[1])
+    # print cost([''])
+    pq = util.PriorityQueueWithFunction(cost)
+    visited = []
+    pq.push((problem.getStartState(), [], 0))
+    while not pq.isEmpty():
+        cur = pq.pop()
+        print "cur = " + str(cur)
+        curState = cur[0]
+        curPath = cur[1]
+        curCost = cur[2]
+
+        if curState not in visited:
+            visited.append(curState)
+            if problem.isGoalState(curState):
+                print type(curPath)
+                return curPath
+            sucessors = problem.getSuccessors(curState)
+            for sucessor in sucessors:
+                print "successor=" + str(sucessor)
+                print "type curPath: " + str(type(curPath))
+                path = list(curPath)
+                print path
+                path.append(sucessor[1])
+                print path
+                pq.push((sucessor[0], path, curCost + sucessor[2]))
+    return False
 
 def nullHeuristic(state, problem=None):
     """
@@ -155,8 +180,33 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    cost = lambda ele: problem.getCostOfActions(ele[1]) + heuristic(ele[0], problem)
+    # print cost([''])
+    pq = util.PriorityQueueWithFunction(cost)
+    visited = []
+    pq.push((problem.getStartState(), [], 0))
+    while not pq.isEmpty():
+        cur = pq.pop()
+        print "cur = " + str(cur)
+        curState = cur[0]
+        curPath = cur[1]
+        curCost = cur[2]
+
+        if curState not in visited:
+            visited.append(curState)
+            if problem.isGoalState(curState):
+                print type(curPath)
+                return curPath
+            sucessors = problem.getSuccessors(curState)
+            for sucessor in sucessors:
+                print "successor=" + str(sucessor)
+                print "type curPath: " + str(type(curPath))
+                path = list(curPath)
+                print path
+                path.append(sucessor[1])
+                print path
+                pq.push((sucessor[0], path, curCost + sucessor[2]))
+    return False
 
 
 # Abbreviations
