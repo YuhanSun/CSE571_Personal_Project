@@ -86,13 +86,60 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    stack = util.Stack()
+    visited = []
+    stack.push((problem.getStartState(), [], 0))
+    while not stack.isEmpty():
+        cur = stack.pop()
+        print "cur = " + str(cur)
+        curState = cur[0]
+        curPath = cur[1]
+        curCost = cur[2]
+
+        if curState not in visited:
+            visited.append(curState)
+            if problem.isGoalState(curState):
+                print type(curPath)
+                return curPath
+            sucessors = problem.getSuccessors(curState)
+            for sucessor in sucessors:
+                print "successor=" +str(sucessor)
+                print "type curPath: " + str(type(curPath))
+                path = list(curPath)
+                print path
+                path.append(sucessor[1])
+                print path
+                stack.push((sucessor[0], path, curCost + sucessor[2]))
+    return False
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    queue = util.Queue()
+    visited = []
+    queue.push((problem.getStartState(), [], 0))
+    while not queue.isEmpty():
+        cur = queue.pop()
+        print "cur = " + str(cur)
+        curState = cur[0]
+        curPath = cur[1]
+        curCost = cur[2]
+
+        if curState not in visited:
+            visited.append(curState)
+            if problem.isGoalState(curState):
+                print type(curPath)
+                return curPath
+            sucessors = problem.getSuccessors(curState)
+            for sucessor in sucessors:
+                print "successor=" +str(sucessor)
+                print "type curPath: " + str(type(curPath))
+                path = list(curPath)
+                print path
+                path.append(sucessor[1])
+                print path
+                queue.push((sucessor[0], path, curCost + sucessor[2]))
+    return False
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
