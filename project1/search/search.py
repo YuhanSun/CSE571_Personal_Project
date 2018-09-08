@@ -132,12 +132,12 @@ def breadthFirstSearch(problem):
                 return curPath
             sucessors = problem.getSuccessors(curState)
             for sucessor in sucessors:
-                print "successor=" +str(sucessor)
-                print "type curPath: " + str(type(curPath))
+                # print "successor=" +str(sucessor)
+                # print "type curPath: " + str(type(curPath))
                 path = list(curPath)
-                print path
+                # print path
                 path.append(sucessor[1])
-                print path
+                # print path
                 queue.push((sucessor[0], path, curCost + sucessor[2]))
     return False
 
