@@ -274,28 +274,31 @@ class CornersProblem(search.SearchProblem):
     """
 
     def __init__(self, startingGameState):
+        print startingGameState
         """
         Stores the walls, pacman's starting position and corners.
         """
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height-2, self.walls.width-2
-        # self.corners = ((1,1), (1,top), (right, 1), (right, top))
-        # for corner in self.corners:
-        #     if not startingGameState.hasFood(*corner):
-        #         print 'Warning: no food in corner ' + str(corner)
+        self.corners = ((1,1), (1,top), (right, 1), (right, top))
+        for corner in self.corners:
+            if not startingGameState.hasFood(*corner):
+                print 'Warning: no food in corner ' + str(corner)
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
 
         self._foods = []
-        for i in (1, top):
-            for j in (1, right):
+        for i in range(1, right + 1):
+            for j in range(1, top + 1):
+                # print (i, j)
                 if startingGameState.hasFood(*(i, j)):
                     self._foods.append((i, j))
 
         self.visualize = True
         self._visited, self._visitedlist = {}, []
+        self._startingGameState = startingGameState
 
     def getStartState(self):
         """
@@ -303,7 +306,7 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        return (self.startingPosition, self._foods)
+        return (self.startingPosition, self._foods, self._startingGameState)
 
     def isGoalState(self, state):
         """
@@ -333,7 +336,6 @@ class CornersProblem(search.SearchProblem):
             is the incremental cost of expanding to that successor
         """
 
-        print "state=" + str(state)
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
@@ -360,11 +362,11 @@ class CornersProblem(search.SearchProblem):
                     # remove the new position from the list
                     # append a successor to the successor list in this format ((position, list of corners), action, 1)
                     restFood.remove(next_pos)
-                    successors.append(((next_pos, restFood), action, cost))
+                    successors.append(((next_pos, restFood, state[2]), action, cost))
                 # if the position is not a corner
                 else:
                     # just append normally, keeping the same list of corners
-                    successors.append(((next_pos, state[1]), action, cost))
+                    successors.append(((next_pos, restFood, state[2]), action, cost))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -402,6 +404,36 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
+    corners = state[1][:]  # These are the corner coordinates
+    walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
+    h = 0  # set heuristic = 0
+    reference = state[0]  # set the reference point to the current position
+
+    # recursive code converted to while loops below:
+
+    # while there are still unvisited corners
+    while corners != []:
+
+        # initialise the distances list
+        distances = []
+
+        # for all the corners that are unvisited,
+        for corner in corners:
+            # find the distance from the reference point to the corner
+            print "state="+str(state)
+            distances.append(abs(reference[0] - corner[0]) + abs(reference[1] - corner[1]))
+            # distances.append(mazeDistance(corner, reference, state[2]))
+        # add the distance to the closest corner to the heuristic
+        h += min(distances)
+        # set the reference to the closest corner
+        reference = corners[distances.index(min(distances))]
+        # remove the corner from the list of unvisited corners
+        corners.remove(reference)
+
+    # return the heuristic
+    return h
+
+
     return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
