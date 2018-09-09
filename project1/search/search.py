@@ -91,7 +91,6 @@ def depthFirstSearch(problem):
     stack.push((problem.getStartState(), [], 0))
     while not stack.isEmpty():
         cur = stack.pop()
-        print "cur = " + str(cur)
         curState = cur[0]
         curPath = cur[1]
         curCost = cur[2]
@@ -120,7 +119,6 @@ def breadthFirstSearch(problem):
     queue.push((problem.getStartState(), [], 0))
     while not queue.isEmpty():
         cur = queue.pop()
-        print "cur = " + str(cur)
         curState = cur[0]
         curPath = cur[1]
         curCost = cur[2]
@@ -150,7 +148,6 @@ def uniformCostSearch(problem):
     pq.push((problem.getStartState(), [], 0))
     while not pq.isEmpty():
         cur = pq.pop()
-        print "cur = " + str(cur)
         curState = cur[0]
         curPath = cur[1]
         curCost = cur[2]
@@ -187,7 +184,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     pq.push((problem.getStartState(), [], 0))
     while not pq.isEmpty():
         cur = pq.pop()
-        print "cur = " + str(cur)
         curState = cur[0]
         curPath = cur[1]
         curCost = cur[2]
