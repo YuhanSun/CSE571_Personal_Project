@@ -77,10 +77,10 @@ class ReflexAgent(Agent):
         "*** YOUR CODE HERE ***"
         # return successorGameState.getScore()
         closestGhoastDist = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
-        print closestGhoastDist
+        # print closestGhoastDist
 
         if closestGhoastDist:
-            closestGhoastDist = -3 / closestGhoastDist
+            closestGhoastDist = -10 / closestGhoastDist
         else:
             closestGhoastDist = -9999
 
@@ -91,11 +91,13 @@ class ReflexAgent(Agent):
 
         foodList = newFood.asList()
         if foodList:
-            closestFoodDist = min([manhattanDistance(newPos, food) for food in foodList])
+            closestFoodDist = 99999999
+            for food in foodList:
+                closestFoodDist = min(manhattanDistance(newPos, food), closestFoodDist)
         else:
             closestFoodDist = 0
 
-        return (-2 * closestFoodDist) + closestGhoastDist - (100 * len(foodList))
+        return (closestGhoastDist - 100 * len(foodList)-2 * closestFoodDist)
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -151,29 +153,41 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         agentCount = gameState.getNumAgents()
-        ActionScore = []
 
-        def minimax_search(state, agentId, depth):
+        def minimax(state, curDepth, agentId):
             if agentId == agentCount:
-                if depth == self.depth:
+                if curDepth == self.depth:
                     return self.evaluationFunction(state)
                 else:
-                    return minimax_search(state, 0, depth + 1)
+                    return minimax(state, curDepth + 1, 0)
             else:
-                moves = state.getLegalActions(agentId)
-                if len(moves) == 0:
+                actions = state.getLegalActions(agentId)
+                if len(actions) == 0:
                     return self.evaluationFunction(state)
-                next = (minimax_search(state.generateSuccessor(agentId, m), agentId + 1, depth) for m in moves)
+                next = (minimax(state.generateSuccessor(agentId, action), curDepth, agentId + 1) for action in actions)
 
                 if agentId == 0:
-                    return max(next)
+                    value = -999999
+                    for action in actions:
+                        value = max(value, minimax(state.generateSuccessor(agentId, action), curDepth, agentId + 1))
                 else:
-                    return min(next)
+                    value = 999999
+                    for action in actions:
+                        value = min(value, minimax(state.generateSuccessor(agentId, action), curDepth, agentId + 1))
+                return value
 
-        result = max(gameState.getLegalActions(0),#here
-                     key=lambda x: minimax_search(gameState.generateSuccessor(0, x), 1, 1))
+        # result = max(gameState.getLegalActions(0),
+        #              key=lambda x: minimax(gameState.generateSuccessor(0, x), 1, 1))
+        actions = gameState.getLegalActions(0)
+        finalScore = -999999
+        for action in actions:
+            nextState = gameState.generateSuccessor(0, action)
+            curScore = minimax(nextState, 1, 1)
+            if curScore > finalScore:
+                resAction = action
+                finalScore = curScore
 
-        return result
+        return resAction
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -187,58 +201,69 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        def alphabeta(state):
+        def alphaBetaSearch(state):
+            # value, bestAction = -999999, None
+            # alpha, beta = -99999999, 99999999
             value, bestAction = None, None
-            a, b = None, None
+            alpha, beta = None, None
 
             for action in state.getLegalActions(0):
-                value = max(value, minValue(state.generateSuccessor(0, action), 1, 1, a, b))
-                if a is None:
-                    a = value
+                value = max(value, minValue(state.generateSuccessor(0, action), 1, 1, alpha, beta))
+                if alpha is None:
+                    alpha = value
                     bestAction = action
                 else:
-                    a, bestAction = max(value, a), action if value > a else bestAction
+                    alpha, bestAction = max(value, alpha), action if value > alpha else bestAction
             return bestAction
 
-        def minValue(state, agentIdx, depth, a, b):
-            if agentIdx == state.getNumAgents():
-                return maxValue(state, 0, depth + 1, a, b)
+        def maxValue(state, agentIdx, depth, alpha, beta):
+            if depth > self.depth:
+                return self.evaluationFunction(state)
             value = None
+            # value = -99999999
             for action in state.getLegalActions(agentIdx):
-                succ = minValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth, a, b)
+                succ = minValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth, alpha, beta)
+                if value is None:
+                    value = succ
+                else:
+                    value = max(value, succ)
+                if beta is not None and value > beta:
+                # if value >= beta:
+                    return value
+                alpha = max(alpha, value)
+            # if value != -99999999:
+            if value is not None:
+                return value
+            else:
+                return self.evaluationFunction(state)
+
+        def minValue(state, agentIdx, depth, alpha, beta):
+            if agentIdx == state.getNumAgents():
+                return maxValue(state, 0, depth + 1, alpha, beta)
+            value = None
+            # value = 99999999
+            for action in state.getLegalActions(agentIdx):
+                succ = minValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth, alpha, beta)
                 if value is None:
                     value = succ
                 else:
                     value = min(value, succ)
-                if a is not None and value < a:
+                if alpha is not None and value < alpha:
+                # if value <= alpha:
                     return value
-                if b is None:
-                    b = value
+                if beta is None:
+                    beta = value
                 else:
-                    b = min(b, value)
+                    beta = min(beta, value)
             if value is not None:
+            # if value != 99999999:
                 return value
             else:
                 return self.evaluationFunction(state)
 
-        def maxValue(state, agentIdx, depth, a, b):
-            if depth > self.depth:
-                return self.evaluationFunction(state)
-            value = None
-            for action in state.getLegalActions(agentIdx):
-                succ = minValue(state.generateSuccessor(agentIdx, action), agentIdx + 1, depth, a, b)
-                value = max(value, succ)
-                if b is not None and value > b:
-                    return value
-                a = max(a, value)
-            if value is not None:
-                return value
-            else:
-                return self.evaluationFunction(state)
+        resAction = alphaBetaSearch(gameState)
 
-        action = alphabeta(gameState)
-
-        return action
+        return resAction
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -254,37 +279,37 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
-        def expectimax_search(state, agentIndex, depth):
-            # if in min layer and last ghost
-            if agentIndex == state.getNumAgents():
-                # if reached max depth, evaluate state
+        agentsCount = gameState.getNumAgents()
+        def expectimax_search(state, depth, agentId):
+            if agentId == agentsCount:
                 if depth == self.depth:
                     return self.evaluationFunction(state)
-                # otherwise start new max layer with bigger depth
                 else:
-                    return expectimax_search(state, 0, depth + 1)
-            # if not min layer and last ghost
+                    return expectimax_search(state, depth + 1, 0)
             else:
-                moves = state.getLegalActions(agentIndex)
-                # if nothing can be done, evaluate the state
-                if len(moves) == 0:
+                actions = state.getLegalActions(agentId)
+                if len(actions) == 0:
                     return self.evaluationFunction(state)
-                # get all the minimax values for the next layer with each node being a possible state after a move
-                next = (expectimax_search(state.generateSuccessor(agentIndex, m), agentIndex + 1, depth) for m in moves)
 
-                # if max layer, return max of layer below
-                if agentIndex == 0:
-                    return max(next)
-                # if min layer, return expectimax values
+                if agentId == 0:
+                    value = -9999999
+                    for action in actions:
+                        value = max(value, expectimax_search(state.generateSuccessor(agentId, action), depth, agentId + 1))
+                    return value
                 else:
-                    l = list(next)
-                    return sum(l) / len(l)
+                    value = 0
+                    for action in actions:
+                        value += expectimax_search(state.generateSuccessor(agentId, action), depth, agentId + 1)
+                    return value / float(len(actions))
 
-        # select the action with the greatest minimax value
-        result = max(gameState.getLegalActions(0),
-                     key=lambda x: expectimax_search(gameState.generateSuccessor(0, x), 1, 1))
+        finalScore = -999999
+        for action in gameState.getLegalActions(0):
+            curScore = expectimax_search(gameState.generateSuccessor(0, action), 1, 1)
+            if curScore > finalScore:
+                resAction = action
+                finalScore = curScore
 
-        return result
+        return resAction
 
 def betterEvaluationFunction(currentGameState):
     """
@@ -300,29 +325,35 @@ def betterEvaluationFunction(currentGameState):
     newCapsules = currentGameState.getCapsules()
     newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-    closestGhost = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
-    if newCapsules:
-        closestCapsule = min([manhattanDistance(newPos, caps) for caps in newCapsules])
-    else:
-        closestCapsule = 0
-
-    if closestCapsule:
-        closest_capsule = -3 / closestCapsule
-    else:
-        closest_capsule = 100
-
-    if closestGhost:
-        ghost_distance = -2 / closestGhost
-    else:
-        ghost_distance = -500
-
     foodList = newFood.asList()
-    if foodList:
-        closestFood = min([manhattanDistance(newPos, food) for food in foodList])
-    else:
-        closestFood = 0
+    foodDistance = [0]
+    for pos in foodList:
+        foodDistance.append(manhattanDistance(newPos, pos))
 
-    return -2 * closestFood + ghost_distance - 10 * len(foodList) + closest_capsule
+    finalValue = 0
+    for capsule in newCapsules:
+        finalValue += 1/manhattanDistance(newPos, capsule)
+
+    closestGhoastDist = min([manhattanDistance(newPos, ghost.getPosition()) for ghost in newGhostStates])
+
+    numberofPowerPellets = len(currentGameState.getCapsules())
+
+    foodCountScore = len(newFood.asList(False))
+    sumScaredTimes = sum(newScaredTimes)
+    foodDistanceScore = 0
+    if sum(foodDistance) > 0:
+        foodDistanceScore = 1.0 / sum(foodDistance)
+
+    finalValue += currentGameState.getScore() + foodDistanceScore + foodCountScore
+
+    if sumScaredTimes > 0:
+        finalValue += sumScaredTimes + (-1 * numberofPowerPellets) + (-1 * closestGhoastDist)
+    else:
+        if closestGhoastDist < 4:
+            finalValue += closestGhoastDist + numberofPowerPellets
+        else:
+            finalValue += numberofPowerPellets + 4
+    return finalValue
 
 
 # Abbreviation
