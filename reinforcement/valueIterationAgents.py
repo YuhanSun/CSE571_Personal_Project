@@ -46,6 +46,20 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
+        for i in range(self.iterations):
+            nextValues = self.values.copy()
+            for state in mdp.getStates():
+                if mdp.isTerminal(state):
+                    for action in mdp.getPossibleActions(state):
+                        valueList = [trans[1] * (mdp.getReward(state, action, trans[0]) + discount * self.values[trans[0]]) for trans in mdp.getTransitionStatesAndProbs(state, action)]
+                        nextValues[state] = sum(valueList)
+                else:
+                    maxValue = float("-inf")
+                    for action in mdp.getPossibleActions(state):
+                        valueList = [trans[1] * (mdp.getReward(state, action, trans[0]) + discount * self.values[trans[0]]) for trans in mdp.getTransitionStatesAndProbs(state, action)]
+                        maxValue = max(maxValue, sum(valueList))
+                    nextValues[state] = maxValue
+            self.values = nextValues
 
     def getValue(self, state):
         """
@@ -60,7 +74,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        qValue = 0
+        for trans in self.mdp.getTransitionStatesAndProbs(state, action):
+            qValue += trans[1] * (self.mdp.getReward(state, action, trans[0]) + self.discount * self.values[trans[0]])
+        return qValue
 
     def computeActionFromValues(self, state):
         """
@@ -72,7 +89,11 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        possibleActions = self.mdp.getPossibleActions(state)
+        if self.mdp.isTerminal(state) == False:
+            qValues = [self.getQValue(state, action) for action in possibleActions]
+            resAction = possibleActions[qValues.index(max(qValues))]
+            return resAction
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
