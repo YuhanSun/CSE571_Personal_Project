@@ -148,22 +148,32 @@ class ExactInference(InferenceModule):
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
 
+        # print noisyDistance
+        # print emissionModel
+        # print pacmanPosition
+
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
 
         # Replace this code with a correct observation update
         # Be sure to handle the "jail" edge case where the ghost is eaten
         # and noisyDistance is None
         allPossible = util.Counter()
-        for p in self.legalPositions:
-            trueDistance = util.manhattanDistance(p, pacmanPosition)
-            if emissionModel[trueDistance] > 0:
-                allPossible[p] = 1.0
+        for position in self.legalPositions:
+            dist = util.manhattanDistance(position, pacmanPosition)
+            if emissionModel[dist] > 0:
+                allPossible[position] = emissionModel[dist] * self.beliefs[position]
+
+        # Handling when ghost is captured.
+        if noisyDistance is None:
+            allPossible = util.Counter()
+            allPossible[self.getJailPosition()] = 1
 
         "*** END YOUR CODE HERE ***"
 
         allPossible.normalize()
         self.beliefs = allPossible
+        # print allPossible
 
     def elapseTime(self, gameState):
         """
@@ -219,7 +229,16 @@ class ExactInference(InferenceModule):
         positions after a time update from a particular position.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        allPossible = util.Counter()
+        newPosDist = util.Counter()
+        for oldPos in self.legalPositions:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, oldPos))
+            for newPos, prob in newPosDist.items():
+                allPossible[newPos] += prob * self.beliefs[oldPos]
+
+        allPossible.normalize()
+        self.beliefs = allPossible
 
     def getBeliefDistribution(self):
         return self.beliefs
@@ -254,6 +273,15 @@ class ParticleFilter(InferenceModule):
         weight with each position) is incorrect and may produce errors.
         """
         "*** YOUR CODE HERE ***"
+        positions = self.legalPositions
+        numP = self.numParticles
+        self.particles = []
+        particle = 0
+        while particle < self.numParticles:
+            for pos in positions:
+                if particle < self.numParticles:
+                    particle += 1
+                    self.particles.append(pos)
 
     def observe(self, observation, gameState):
         """
