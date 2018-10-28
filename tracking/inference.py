@@ -501,7 +501,6 @@ class JointParticleFilter:
                 if noisyDistances[i] is None:
                     particle = self.getParticleWithGhostInJail(particle, i)
                 else:
-                    # dist = util.manhattanDistance(particle[i], pacmanPosition)
                     curProbability *= emissionModels[i][util.manhattanDistance(particle[i], pacmanPosition)]
             allPossible[particle] += curProbability
 
@@ -513,11 +512,9 @@ class JointParticleFilter:
                         particle = self.getParticleWithGhostInJail(particle, i)
         else:
             allPossible.normalize()
-            # curProbability = []
             self.particles = []
             for _ in range(0, self.numParticles):
                 self.particles.append(util.sample(allPossible))
-            # self.particles = curProbability
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
@@ -578,7 +575,10 @@ class JointParticleFilter:
             # now loop through and update each entry in newParticle...
 
             "*** YOUR CODE HERE ***"
-
+            for i in range(self.numGhosts):
+                newGhostPos = setGhostPositions(gameState, newParticle)
+                newPosDist = getPositionDistributionForGhost(newGhostPos, i, self.ghostAgents[i])
+                newParticle[i] = util.sample(newPosDist)
             "*** END YOUR CODE HERE ***"
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
