@@ -320,8 +320,7 @@ class ParticleFilter(InferenceModule):
             allPossible = util.Counter()
             belief = self.getBeliefDistribution()
             for position in self.legalPositions:
-                dist = util.manhattanDistance(position, pacmanPosition)
-                allPossible[position] += emissionModel[dist] * belief[position]
+                allPossible[position] += emissionModel[util.manhattanDistance(position, pacmanPosition)] * belief[position]
             if not any(allPossible.values()):
                 self.initializeUniformly(gameState)
             else:
@@ -350,10 +349,7 @@ class ParticleFilter(InferenceModule):
             allPossible[position] = self.getPositionDistribution(self.setGhostPosition(gameState, position))
         nextPCs = []
         for particle in self.particles:
-            try:
-                nextPCs.append(util.sample(allPossible[particle]))
-            except:
-                nextPCs.append(particle)
+            nextPCs.append(util.sample(allPossible[particle]))
         self.particles = nextPCs
 
     def getBeliefDistribution(self):
@@ -366,7 +362,6 @@ class ParticleFilter(InferenceModule):
         "*** YOUR CODE HERE ***"
         # util.raiseNotDefined()
         dist = util.Counter()
-
         for particle in self.particles:
             dist[particle] += 1
         dist.normalize()
