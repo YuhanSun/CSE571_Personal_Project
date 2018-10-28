@@ -445,7 +445,6 @@ class JointParticleFilter:
         "*** YOUR CODE HERE ***"
         permutation = list(itertools.product(self.legalPositions, repeat=self.numGhosts))
         random.shuffle(permutation)
-
         self.particles = list()
         cnt = 0
         while cnt < self.numParticles:
@@ -504,25 +503,26 @@ class JointParticleFilter:
         for _, particle in enumerate(self.particles):
             curProbability = 1.0
             for i in range(self.numGhosts):
-                if noisyDistances[i] == None:
+                if noisyDistances[i] is None:
                     particle = self.getParticleWithGhostInJail(particle, i)
                 else:
-                    dist = util.manhattanDistance(particle[i], pacmanPosition)
-                    curProbability *= emissionModels[i][dist]
+                    # dist = util.manhattanDistance(particle[i], pacmanPosition)
+                    curProbability *= emissionModels[i][util.manhattanDistance(particle[i], pacmanPosition)]
             allPossible[particle] += curProbability
 
         if not any(allPossible.values()):
             self.initializeParticles()
             for _, particle in enumerate(self.particles):
                 for i in range(self.numGhosts):
-                    if noisyDistances[i] == None:
+                    if noisyDistances[i] is None:
                         particle = self.getParticleWithGhostInJail(particle, i)
         else:
             allPossible.normalize()
-            curProbability = []
+            # curProbability = []
+            self.particles = []
             for _ in range(0, self.numParticles):
-                curProbability.append(util.sample(allPossible))
-            self.particles = curProbability
+                self.particles.append(util.sample(allPossible))
+            # self.particles = curProbability
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
