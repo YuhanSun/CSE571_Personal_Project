@@ -502,27 +502,27 @@ class JointParticleFilter:
         "*** YOUR CODE HERE ***"
         allPossible = util.Counter()
         for _, particle in enumerate(self.particles):
-            temp = 1.0
+            curProbability = 1.0
             for i in range(self.numGhosts):
                 if noisyDistances[i] == None:
                     particle = self.getParticleWithGhostInJail(particle, i)
                 else:
-                    distance = util.manhattanDistance(particle[i], pacmanPosition)
-                    temp *= emissionModels[i][distance]
-            allPossible[particle] += temp
+                    dist = util.manhattanDistance(particle[i], pacmanPosition)
+                    curProbability *= emissionModels[i][dist]
+            allPossible[particle] += curProbability
 
         if not any(allPossible.values()):
             self.initializeParticles()
-            for index, particle in enumerate(self.particles):
+            for _, particle in enumerate(self.particles):
                 for i in range(self.numGhosts):
                     if noisyDistances[i] == None:
                         particle = self.getParticleWithGhostInJail(particle, i)
         else:
             allPossible.normalize()
-            temp = []
+            curProbability = []
             for _ in range(0, self.numParticles):
-                temp.append(util.sample(allPossible))
-            self.particles = temp
+                curProbability.append(util.sample(allPossible))
+            self.particles = curProbability
 
     def getParticleWithGhostInJail(self, particle, ghostIndex):
         """
