@@ -344,9 +344,14 @@ class ParticleFilter(InferenceModule):
         """
         "*** YOUR CODE HERE ***"
         # util.raiseNotDefined()
+        # nextPCs = []
+        # for particle in self.particles:
+        #     nextPCs.extend([util.sample(self.getPositionDistribution(self.setGhostPosition(gameState, particle)))])
+        # self.particles = nextPCs
+
         allPossible = util.Counter()
-        for position in self.legalPositions:
-            allPossible[position] = self.getPositionDistribution(self.setGhostPosition(gameState, position))
+        for particle in self.particles:
+            allPossible[particle] = self.getPositionDistribution(self.setGhostPosition(gameState, particle))
         nextPCs = []
         for particle in self.particles:
             nextPCs.append(util.sample(allPossible[particle]))
@@ -576,9 +581,9 @@ class JointParticleFilter:
 
             "*** YOUR CODE HERE ***"
             for i in range(self.numGhosts):
-                newGhostPos = setGhostPositions(gameState, newParticle)
-                newPosDist = getPositionDistributionForGhost(newGhostPos, i, self.ghostAgents[i])
-                newParticle[i] = util.sample(newPosDist)
+                nextPosition = setGhostPositions(gameState, newParticle)
+                dist = getPositionDistributionForGhost(nextPosition, i, self.ghostAgents[i])
+                newParticle[i] = util.sample(dist)
             "*** END YOUR CODE HERE ***"
             newParticles.append(tuple(newParticle))
         self.particles = newParticles
